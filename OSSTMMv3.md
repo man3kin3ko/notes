@@ -1,9 +1,3 @@
----
-title: OSSTMMv3
-created: '2022-08-29T13:43:25.017Z'
-modified: '2022-08-29T15:46:04.992Z'
----
-
 # OSSTMMv3
 ## About
 
