@@ -25,6 +25,7 @@
 Для предотвращения горизонтального перемещения или повышения привилегий через узявимое приложение, Android использует SELinux, присваивая для каждого ресурса метку `user:role:type:mls_level`.
 
 APK-приложения имеют следующую струткуру:
+
 ![](pics/apk-structure.png)
 
 Помимо минимальной версии ОС, манифест содержит много метаинформации, такой как exported avtivities и content providers которая анализируется статическими анализаторами (см. MobSF)
@@ -67,6 +68,7 @@ bundletool build-apks --bundle=my_app.aab --output=my_app.apk
 Проверить корректность настройки FireBase:
 
 https://github.com/shivsahni/FireBaseScanner - или есть в MobSF
+
 https://cloud.hacktricks.xyz/pentesting-cloud/gcp-pentesting/gcp-services/gcp-databases-enum/gcp-firebase-enum
 
 ## Динамический анализ приложений
@@ -85,6 +87,10 @@ adb shell
 
 #magiskhide disable # можно использовать если frida установлена как дополнение magisk, но нужно чтобы клиент на пк совпадал по версии
 ```
+
+Для сложных случаев (например, когда приложение использует кастомное шифрование внутри TLS-сессии) существует аддон для Burp - Brida
+
+https://www.youtube.com/watch?v=RawqXSslsQk
 
 ### drozer
 
@@ -106,6 +112,42 @@ run app.providers.info -a pkg-name
 run scanner.provider.finduris pkg-name
 run app.provider.query content://$founded_query
 ```
+
+Service - это фоновые процессы, обеспечивающие работу уведомлений или запуск интентов. Интенты - это компоненты, позволяющие запускать процессы асинхронной IPC коммуникации посредством Binder. Binder представляет собой виртуальное символьное устройство `/dev/binder`, которое позволяет посылать сообщения между изолированными процессами различных приложений. В Android Binder является надстройкой над OpenBinder. Интенты могут:
+- запускать Activity
+- запускать сервисы
+- рассылать бродкаст-сообщения о событиях для других приложений
+
+Broadcast recivers запускают интенты в зависимости от полученных бродкастовых сообщений.
+
+Если у экспортируемого бродкаст ресивера, сервиса, провайдера или активити стоит кастомный permission, это можно эксплуатировать:
+
+https://github.com/commonsguy/cwac-security/blob/master/PERMS.md
+
+
+### WebView
+
+Если среди exported activities есть что-то вроде com.pkg-name.Deeplink, это значит, что можно открывать ссылки при помощи drozer:
+
+```
+run app.activity.start --component com.pkg-name.Deeplink --data http://test/poc.html
+```
+
+Для каких доменов и URI ссылки откроются в самом приложении будет зависеть от настроек в `AndroidManifest.xml` в тегах `<intent-filter>`. Для того, чтобы диплинки по `http://` и `https://` схемам открывались корректно, на соответствующем домене должен быть доступен Digital Asset Links file.
+
+Если соответствующее диплинку активити не имплеметировано в приложении, скорее всего, ссылка откроется в WebView. 
+
+По умолчанию в WebView JS выключен и для его использования требуется вызвать метод для его добавления явно (обычно MobSF показывает, в каком месте кода это было сделано).
+Если JS включен в WebView, то в случае обнаружения XSS на целевом домене злоумышленник может иметь:
+- доступ к ФС через `file://path/file` если позволяет CSP и WebView был инициализирован с `setAllowFileAccess`
+- доступ к данным других приложений на внешнем носителе, если приложению были даны права `_android.permission.READ_EXTERNAL_STORAGE _` и есть доступ к ФС
+- доступ к интентам через схему `intent://`
+
+Если WebView был инициализирован с методом `AddJavaScriptInterface`, то у JS будет инициализирован в режиме **native bridge**. Это значит, что у него будет доступ ко всем методам приложения, объявленным с помощью `@JavascriptInterface`. В SDK ниже 17 это может привести к RCE.
+
+Если WebView был инициализирован с методом `setWebContentsDebuggingEnabled`, то он будет доступен для удаленного дебага при помощи chromium-браузеров. Если дебаг выключен, его можно включить при помощи скрипта Frida: https://gist.github.com/1mm0rt41PC/cd492f24dc061019fb25222ba0b96d20/. Для доступа к открытой WebView странице нужно будет подключить устройство через adb и зайти по адресу `chrome://inspect/#devices`. 
+
+https://book.hacktricks.xyz/mobile-pentesting/android-app-pentesting/webview-attacks
 
 ### Анализ логов
 
