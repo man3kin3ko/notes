@@ -69,9 +69,27 @@ bundletool build-apks --bundle=my_app.aab --output=my_app.apk
 
 ## Статический анализ приложений
 
+### FireBase
+
 Проверить корректность настройки FireBase: в MobSF найти адрес проекта и перейти на `https://project.firebase.io/.json`. Если в возвращенном значении будет `Database have been deactivated` или `Permission denied`, то FB выключен или корректно настроен.
 
 https://cloud.hacktricks.xyz/pentesting-cloud/gcp-pentesting/gcp-services/gcp-databases-enum/gcp-firebase-enum
+
+Некорректная конфигурация FB может привести к рассылке фишинговых пушей: https://abss.me/posts/fcm-takeover/
+
+### Hardocded credentials
+
+Иногда API-ключи могут храниться разработчиками в виде массива байт, i.e. `bytes = [104, 106, ..., 107]`, что не позволяет 
+
+### Native libraries
+
+До версии gcc 4.9 не имел опции `-fstack-protector-strong`, поэтому нативные библиотеки, использующие его, могут иметь бинарные уязвимости, такие, как переполнение буфера:
+
+```bash
+for i in $(ls ./lib | grep *.so); do
+    string $PWD/$i | grep "gcc";
+done
+```
 
 ## Динамический анализ приложений
 
@@ -90,11 +108,11 @@ adb shell
 #magiskhide disable # можно использовать если frida установлена как дополнение magisk, но нужно чтобы клиент на пк совпадал по версии
 ```
 
-Для сложных случаев (например, когда приложение использует кастомное шифрование внутри TLS-сессии) существует аддон для Burp - Brida
+Для сложных случаев (например, когда приложение использует кастомное шифрование внутри TLS-сессии) существует аддон для Burp - Brida. Плагин позволяет перехватывать большую часть java-вызовов, связанных с криптографией, что позволяет, например, быстро создавать скрипты для подделки boolean-based биометрической аутентификации. В [этом видео авторы](https://www.youtube.com/watch?v=RawqXSslsQk) показывают, как его использовать.
 
-https://www.youtube.com/watch?v=RawqXSslsQk
+> ⚠️ Brida не сможет создавать хуки для нативных криптографических функций
 
-### drozer
+### IPC & drozer
 
 ```
 adb forward tcp:31415 tcp:31415
@@ -102,14 +120,19 @@ drozer console connect
 run app.package.attacksurface pkg-name
 ```
 
-Activity - это наследник класса Activity. На экране может показываться только одно Activity одновременно. Те activity, которые могут вызываться другими приложениями, называются exported activities. В лучшем случае у приложения оно одно - точка входа в него. Если это не так, необходимо убедиться, что вызов exported activity не позволяет нарушать бизнес логику или обходить локальную аутентификацию.
+**Activity** - это наследник класса Activity. На экране может показываться только одно Activity одновременно. Те activity, которые могут вызываться другими приложениями, называются exported activities. В лучшем случае у приложения оно одно - точка входа в него. Если это не так, необходимо убедиться, что вызов exported activity не позволяет нарушать бизнес логику или обходить локальную аутентификацию.
 
 ```
 run app.activity.info -a pkg-name
 run app.activity.start --component pkg-name activity
 ```
 
-Content providers предоставляют другим приложениям доступ к ресурсами (SQLite базам и файлам) через схему `content://`, если они экспортированы.
+Пример path traversal в exported activity, приводящее к исполнению кода: 
+
+- https://hackerone.com/reports/1115864
+- https://hackerone.com/reports/1377748
+
+**Content providers** предоставляют другим приложениям доступ к ресурсами (SQLite базам и файлам) через схему `content://`, если они экспортированы.
 
 ```
 run app.providers.info -a pkg-name
@@ -117,19 +140,46 @@ run scanner.provider.finduris pkg-name
 run app.provider.query content://$founded_query
 ```
 
-Service - это фоновые процессы, обеспечивающие работу уведомлений или запуск интентов. Интенты - это компоненты, позволяющие запускать процессы асинхронной IPC коммуникации посредством Binder. Binder представляет собой виртуальное символьное устройство `/dev/binder`, которое позволяет посылать сообщения между изолированными процессами различных приложений. В Android Binder является надстройкой над OpenBinder. Интенты могут:
+> Если targetSdk < 17, то content provider без указания атрибута `exported` будет экспортирован по умолчанию
+
+**Service** - это фоновые процессы, обеспечивающие работу уведомлений или запуск интентов. Интенты - это компоненты, позволяющие запускать процессы асинхронной IPC коммуникации посредством Binder. Binder представляет собой виртуальное символьное устройство `/dev/binder`, которое позволяет посылать сообщения между изолированными процессами различных приложений. В Android Binder является надстройкой над OpenBinder. Интенты могут:
 - запускать Activity
 - запускать сервисы
 - рассылать бродкаст-сообщения о событиях для других приложений
 
-Broadcast recivers запускают интенты в зависимости от полученных бродкастовых сообщений.
+**Broadcast recivers** запускают интенты в зависимости от полученных бродкастовых сообщений.
 
 Если у экспортируемого бродкаст ресивера, сервиса, провайдера или активити стоит кастомный permission, это можно эксплуатировать:
 
 https://github.com/commonsguy/cwac-security/blob/master/PERMS.md
 
 
-### Deeplink и WebView 
+### Intents
+
+Интенты - это объекты для передачи сообщений между процессамии. Интенты могут быть явными (explicit, с указанием активити-получателя) и неявными (implicit, получателя выбирает ОС).
+
+Интенты [могут cоздаваться сайтами посредством ссылок](https://developer.chrome.com/docs/multidevice/android/intents/#syntax) и вызывать активити, если у активити задан атрибут `android.intent.category.BROWSABLE` 
+
+Интенты могут создавать угрозу интент-инъекций и интент-редиректа.
+
+Уязвимости intent redirect возникают тогда, когда exported activity передает интент в другое активити, которое злоумышленник не смог бы запустить иным образом:
+
+```java
+Intent extra = new Intent();
+extra.setClassName("com.victim", "com.victim.HiddenActivity");
+extra.putExtra("url", "http://evil.com/");
+
+Intent intent = new Intent();
+intent.setClassName("com.victim", "com.victim.ExportedActivity");
+intent.putExtra("extra_intent", extra);
+startActivity(intent);
+```
+
+Следует уделять внимание exported activity, в котором интенты передаются далее в методы `startActivity()` и `sendBroadcast()` или создаются из строки методом `Intent.parseUri()`.
+
+![](pics/intent-redirect.png)
+
+### Deeplink 
 
 Если среди exported activities есть что-то вроде `com.pkg-name.Deeplink`, это значит, что можно открывать ссылки при помощи drozer:
 
@@ -137,7 +187,19 @@ https://github.com/commonsguy/cwac-security/blob/master/PERMS.md
 run app.activity.start --component com.pkg-name.Deeplink --data http://test/poc.html
 ```
 
-Для каких доменов и URI ссылки откроются в самом приложении будет зависеть от настроек в `AndroidManifest.xml` в тегах `<intent-filter>`. Для того, чтобы диплинки по `http://` и `https://` схемам открывались корректно, на соответствующем домене должен быть доступен Digital Asset Links file.
+До версии 18 в WebView Android и до версии 25 в Chrome посредством диплинкинга можно вызывать приложение в фрейме:
+
+```html
+<iframe src="paulsawesomeapp://page1"></iframe>
+```
+
+Для каких доменов и URI ссылки откроются в самом приложении будет зависеть от настроек в `AndroidManifest.xml` в тегах `<intent-filter>`. Для того, чтобы диплинки по `http://` и `https://` схемам открывались корректно, на соответствующем домене должен быть доступен файл Digital Asset Links (DAL).
+
+Если при объявлении intent-filter был установлен атрибут `"autoVerify=true"`, при открытии зарегестрированной ссылки система не будет постоянно спрашивать, в каком приложении пользователь хотел бы ее открыть. Однако, для этого DAL должен быть корректно сформирован.
+
+OWASP рекомендует передавать файл по HTTPS, чтобы избежать подмены ` "package_name": "com.example.maliciousapp"` и фишинга.
+
+### WebView
 
 Если соответствующее диплинку активити не имплеметировано в приложении, скорее всего, ссылка откроется в WebView. 
 
@@ -153,6 +215,17 @@ run app.activity.start --component com.pkg-name.Deeplink --data http://test/poc.
 
 https://book.hacktricks.xyz/mobile-pentesting/android-app-pentesting/webview-attacks
 
+Иногда разработчики могут переопределять методы ванильного WebView, и нужно уделять внимание, не были ли перезаписаны методы, связанные с безопасностью:
+
+```java
+@Override public void onRecivedSslError(WebView view, SslErrorHandler handler, SslError error)
+{
+    handler.proceed(); // Ignore SSL certificate errors
+}
+```
+
+Подобная конфигурация приведет к игнорированию всех ошибок, связанных с валидацией SSL-сертификатов и [позволит осуществлять атаки типа MiTM](https://stackoverflow.com/questions/36050741/webview-how-to-avoid-security-alert-from-google-play-upon-implementation-of-onr).
+
 ### Аутентификация
 
 В идеале пин-код или биометрический токен с устройства должен отправляться на бекенд приложения, где можно имплеметировать защиту от перебора, а также локального изменения пина (например, посредством создания бекапа). Если это невозможно, он должен использоваться для получения криптографического токена:
@@ -165,20 +238,31 @@ https://book.hacktricks.xyz/mobile-pentesting/android-app-pentesting/webview-att
 
 ### Анализ логов
 
-⚠️ Python2.7
+⚠️ Python2.7, в blackarch есть отдельный пакет, так что можно не использовать pyenv
 
 https://github.com/JakeWharton/pidcat
 
 
 # Ресурсы и практика
 
+https://forum.bugcrowd.com/t/researcher-resources-mobile-focused/1376
+
+BugBounty отчеты могут быть найдены, например, следующим образом: `"deep link*"|"deeplink*" site:https://hackerone.com/reports/`
+
+## Лабы
+
 - https://github.com/OWASP/owasp-mastg/blob/master/Document/0x08b-Reference-Apps.md#android-uncrackable-l4
 - https://tryhackme.com/room/androidhacking101
 - https://rewanthtammana.com/damn-vulnerable-bank/index.html
-- https://habr.com/ru/post/352252/
+
+
+## Книги и статьи
+
 - https://mas.owasp.org/MASTG/
 - https://book.hacktricks.xyz/mobile-pentesting/android-app-pentesting
+- https://habr.com/ru/post/352252/
 - Евгений Зобнин: Android глазами хакера
+- The Mobile Application Hacker's Handbook
 
 # Операционная система iOS
 
