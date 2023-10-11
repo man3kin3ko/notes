@@ -6,7 +6,8 @@
 
 # Schemes
 
-[Attacking Redis db via CR symbols in `git://` link](https://hackerone.com/reports/441090)
+- [Attacking Redis db via CR symbols in `git://` link](https://hackerone.com/reports/441090)
+- [A tool](https://github.com/tarunkant/Gopherus) to attack different network services via a `gopher://` link
 
 # Vulns
 
