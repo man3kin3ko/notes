@@ -1,10 +1,4 @@
-https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html
-
-https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/web-api-pentesting
-
-# Спецификация OpenAPI
-
-https://swagger.io/specification/
+## [Спецификация OpenAPI](https://swagger.io/specification/)
 
 Конвертировать из коллекции Postman:
 
@@ -14,7 +8,7 @@ https://www.postman.com/postman/workspace/postman-open-technologies-convert-post
 
 Чтобы найти спецификацию, нужно перебрать [директории](https://github.com/hAPI-hacker/Hacking-APIs/blob/main/api_docs_path) и [поддомены](https://github.com/hAPI-hacker/Hacking-APIs/blob/main/docs_subdomain) сервиса.
 
-# Аутентификация
+## Аутентификация
 
 `Authentication Token Obtain and Replace` плагин в бурпе может за вас сходить на другой сайт с куками, получить JWT и подставить его к Repeater/Scanner/Extension-запросам
 
@@ -27,9 +21,9 @@ X-My-Header: - проверить использование кастомных 
 
 [ ⌛ Как проверять криптографическую надежность токенов ]
 
-# Уязвимости
+### Уязвимости
 
-## JWT
+### JWT
 
 https://token.dev/
 
@@ -39,13 +33,13 @@ https://github.com/ticarpi/jwt_tool
 
 Для бека на node.js: https://github.com/aalex954/CVE-2022-23529-Exploration
 
-### Scan
+#### Scan
 
 ```bash
 python3 jwt_tool.py -t $URL -rh "Authorization: $TOKEN" -M at -np
 ```
 
-### Key Confusion Attack
+#### Key Confusion Attack
 
 https://portswigger.net/web-security/jwt/algorithm-confusion
 
@@ -55,7 +49,7 @@ https://portswigger.net/web-security/jwt/algorithm-confusion
 python3 jwt_tool.py $TOKEN -X k -pk public-key.pem
 ```
 
-### Cracking
+#### Cracking
 
 ```
 hashcat -a 0 -m 16500 jwt.txt passlist.txt
@@ -63,18 +57,17 @@ hashcat -a 0 -m 16500 jwt.txt passlist.txt
 
 https://github.com/wallarm/jwt-secrets/blob/master/jwt.secrets.list
 
-### kid / jku header
+#### kid / jku header
 
 https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/JSON%20Web%20Token/README.md#jwt-claims
 
-### Постэксплуатация
+#### Постэксплуатация
 
-Внедрение самоподписанных мертификатов через заголовок `"x5c"`.
+Внедрение самоподписанных cертификатов через заголовок `"x5c"`.
 
 Ошибки сериализации при обработке внедренного заголовка Content-Type `"cty"`
 
-
-## Buisness logiс bypass
+### Buisness logiс bypass
 Если дана последовательность ручек:
 
 ```
@@ -86,4 +79,7 @@ POST /v1/user/register/confirm (registerToken, login, password)
 
 Если в документации сказано, что какие-то вещи строго нельзя делать, их нужно делать. Если даны ограничения по объему, формату или кодировке данных, их необходимо нарушать.
 
-##
+## See also
+
+- https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html
+- https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/web-api-pentesting

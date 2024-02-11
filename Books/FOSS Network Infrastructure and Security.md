@@ -1,4 +1,4 @@
-# FOSS Network Infrastructure and Security
+
 ## DNS
 Domain names are implementation of DNS **name space**. Each name space is reflected by its **zone file** or **administrative name space**. Servers that hosts zone files are authoritative that can be **master** or **slave** server. Each time the master server is updated, it can automatically send notification to slaves. Servers that doesn't handle their own zone file are non-authoritative and usually perform caching to increase the network performance. **Caching nameservers should never perform authoritative functions to prevent cache poisoning attacks**. 
 

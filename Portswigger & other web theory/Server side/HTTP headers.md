@@ -5,6 +5,8 @@ You can find any custom HTTP-headers that is used by the server using a prefligh
 Sometimes custom headers can appear in 400-code responses.
 
 Pay attention to those headers that is mentioned in `Vary` response header. Usually it contains headers that will create a cache key.
+
+[Use Bambda filters to find unusual headers in your traffic](https://danaepp.com/detecting-uncommon-headers).
 ## Hop-by-hop headers
 
 You can use `Connection: close, HEADER` to instruct proxy to not cache and remove those header. As a result of transmitting `HEADER` through the proxy, you can perform cache poisoning and bypass some access controls.

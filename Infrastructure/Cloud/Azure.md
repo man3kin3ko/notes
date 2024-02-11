@@ -55,7 +55,7 @@ docker login myregistry.azurecr.io --username 00000000-0000-0000-0000-0000000000
 
 # Web App Service
 
-Сервис Web App представляет собой облачное веб-приложение, собираемое из контейнера. В качестве платформы могут использоваться как ОС Windows, так и Linux. К приложению могут быть привязаны несколько внешних IP-адресов на portal.azure.com. Кроме того, существуют несколько поддоменов специального назначения, например, https://<servicename>.scm.azurewebsites.net, https://<servicename>.azurewebsites.net, https://<servicename>.b2clogin.com.
+Сервис Web App представляет собой облачное веб-приложение, собираемое из контейнера. В качестве платформы могут использоваться как ОС Windows, так и Linux. К приложению могут быть привязаны несколько внешних IP-адресов на portal.azure.com. Кроме того, существуют несколько поддоменов специального назначения, например, `https://<servicename>.scm.azurewebsites.net`, `https://<servicename>.azurewebsites.net`, `https://<servicename>.b2clogin.com`.
 
 ### Веб-консоли
 
@@ -63,13 +63,13 @@ docker login myregistry.azurecr.io --username 00000000-0000-0000-0000-0000000000
 
 Kudu представляет собой chroot-среду, из которой не будет доступа к реальным сетевым интерфейсам, пользователям и процессам машины, однако, через него будет доступна часть файловой системы запущенного приложения и актуальные переменные среды. В файловой системе необходимо исследовать логи в корне и рабочую директорию на предмет наличия данных для латера. В левой нижней части интерфейса можно будет скопировать пароль для Kudu в открытом виде и затем проверить его переиспользование в других сервисах.
 
-Kudu будет доступен по URL-адресу https://<имясервиса>.scm.azurewebsites.net/DebugConsole
+Kudu будет доступен по URL-адресу `https://<имясервиса>.scm.azurewebsites.net/DebugConsole`
 
 WebSSH предоставляет полный доступ к машине, в которой запущено приложение. Для того, чтобы получить к ему доступ, необходимо иметь имя этого инстанса и поместить это значение в cookie `ARRAffinity`:
 
 ![https://codez.deedx.cz/images/how-to-ssh-into-web-app-instance/image-20210203122041737.png](https://codez.deedx.cz/images/how-to-ssh-into-web-app-instance/image-20210203122041737.png)
 
-WebSSH будет доступен по URL-адресу https://<имясервиса>.azurewebsites.net/webssh/host.
+WebSSH будет доступен по URL-адресу `https://<имясервиса>.azurewebsites.net/webssh/host`.
 
 Даже если доступ к консоли на первый взгляд не представляет ничего интересного, следует держать в уме, что многие атаки будут ограничены правилами фаерволла, поэтому проксирование трафика через машину с доверенным адресом может спасти ситуацию.
 
@@ -153,7 +153,7 @@ credential = ClientSecretCredential(
     client_secre
 )
 client = SecretClient(
-    'https://naudapay-live.vault.azure.net/',
+    'https://pentest.vault.azure.net/',
     credential
 )
 print(credential.get_token(
