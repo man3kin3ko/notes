@@ -106,6 +106,19 @@ curl "$IDENTITY_ENDPOINT?resource=$mgmt_res" -H X-IDENTITY-HEADER:$IDENTITY_HEAD
 eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJodHRwczovL3ZhdWx0LmF6dXJlLm5ldCIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzZhOWQ4MDY5LTI2MzQtNGNmMi1hNTM4LThjYjYxZmM2MGU0Yy8iLCJpYXQiOjE2NzE0MzgzODEsIm5iZiI6MTY3MTQzODM4MSwiZXhwIjoxNjcxNDQyMjgxLCJhaW8iOiJFMlpnWUpCdWZ2dEFMZnl2OFNyR2h3dVR2SDAzQUFBPSIsImFwcGlkIjoiYTIxOGI3MTItOTViOS00ZjI0LWFmYzEtZDlhNzg5OGRlZGMwIiwiYXBxaWRhY3IiOiIxIiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNmE5ZDgwNjktMjYzNC00Y2YyLWE1MzgtOGNiNjFmYzYwZTRjisi5Im9pZCI6IjYzNTg1MDVlLThlM2UtNGE0Mi1hZjAyLWExZjU0ZTMzZDExNyIsInJoIjoiMC5BVWdBYVlDZGFqUW04a3lsT0l5Mkg4WU9URG16cU0taWdocEhvOGtQd0w1NlFKTklBQUEuIiwic3ViIjoiNjM1ODUwNWUtOGUzZS00YTQyLWFmMDItYTFmNTRlMzNkMTE3IiwidGlkIjoiNmE5ZDgwNjktMjYzNC00Y2YyLWE1MzgtOGNiNjFmYzYwZTRjIiwidXRpIjoiV2U4SlhZZEhVMGljX1Z2Q2xfdlBBQSIsInZlciI6IjEuMCJ9.nlwtHl4LQD2QNatLhMgY8le_6e8AIr_QRVGft5aBxpaKUDx0Zh-FYQaZ209LD4Q-eC2q1vNpdX4UwDg1jD-IU1t1K5V1dTexVs4Q1kZuZk1HK-Swk-bQmO7M72C4XRQtQLEKyhkuVIDqP3_v9xUWZNR7NKpBv3eOes5dT071k_b-J7C2fTOJlJCzBd82zPlWsAtQ1sJ06-7aZVuH5Xd9Z2S3pnDtRJqYnvqjzPEjdrWRjK2NWkTolqA85iNJM51B8hD0s65VhEkaEtHMK6peIIQkpfHpUw6BHmP9cSWu2eTHWF-KMkeY9HxnXH6VZ1zH-VMXZ1bbUyJA2XFgNaNrhQ
 ```
 
+### Tenancy
+
+Веб-приложение может быть single-tenancy или multi-tenancy, что означает, что доступ к данному приложению могут получать либо пользователи одного тенанта, либо, в целом, все клиенты Microsoft.
+
+Для того, чтобы проверить, является ли приложение multi-tenancy, администратор может запустить следующую команду:
+
+```bash
+az ad app list --filter "(signinaudience eq 'AzureADMultipleOrgs' or
+signinaudience eq 'AzureADandPersonalMicrosoftAccount')" --query "[?web && 
+web.homePageUrl].{AppName:displayName, AppID:appId, AppURL:web.homePageUrl}" 
+```
+
+[Эксплуатация multi-tenancy](https://www.wiz.io/blog/azure-active-directory-bing-misconfiguration?ref=danaepp.com)
 ### Сетевые службы
 
 Публичные IP-адреса приложения, полученные на портале, необходимо просканировать на предмет наличия недекларированных сервисов. Как правило, будут открыты следующие порты:

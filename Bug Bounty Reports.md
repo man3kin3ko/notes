@@ -1,16 +1,27 @@
 # Platforms
 
-- bugbounty.ru
+- https://bugbounty.ru
 - https://yandex.ru/bugbounty/index
 - https://support.kaspersky.ru/vulnerability/overview/12428?el=12429#block2
+- https://www.jivo.ru/bugbounty/ 
+- https://www.cloud4y.ru/cloud-services/bugbounty/ 
+- https://kontur.ru/bugbounty 
+- https://ru.liveagent.com/programma-bag-baunti/ 
+- https://corp.mamba.ru/ru/developer/security 
+- https://love.ru/bugbounty/ 
+- https://bugbounty.mts-link.ru/
 
-# Schemes
+# by Schemes
 
 - [Attacking Redis db via CR symbols in `git://` link](https://hackerone.com/reports/441090)
 - [A tool](https://github.com/tarunkant/Gopherus) to attack different network services via a `gopher://` link
 
-# Vulns
+# by Vulns
 
+## Cross-tenant vulnerabilities (related for cloud providers)
+
+- [Finding local orchestrator API via script execution ability](https://orca.security/resources/blog/autowarp-microsoft-azure-automation-service-vulnerability/?ref=danaepp.com)
+- 
 ## CRLF Injection
 
 [Session Fixation](https://hackerone.com/reports/15492) via [nginx misconfiguration](http://blog.volema.com/nginx-insecurities.html)
