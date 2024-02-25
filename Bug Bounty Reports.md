@@ -1,5 +1,7 @@
 # Platforms
 
+## Russian
+
 - https://bugbounty.ru
 - https://yandex.ru/bugbounty/index
 - https://support.kaspersky.ru/vulnerability/overview/12428?el=12429#block2
@@ -10,6 +12,10 @@
 - https://corp.mamba.ru/ru/developer/security 
 - https://love.ru/bugbounty/ 
 - https://bugbounty.mts-link.ru/
+## Worldwide
+
+- Immunefi
+- https://bughunters.google.com/about/rules/5604090422493184/google-play-security-reward-program-rules
 
 # by Schemes
 
@@ -18,10 +24,10 @@
 
 # by Vulns
 
-## Cross-tenant vulnerabilities (related for cloud providers)
+## Cross-tenant attacks (related for cloud providers)
 
 - [Finding local orchestrator API via script execution ability](https://orca.security/resources/blog/autowarp-microsoft-azure-automation-service-vulnerability/?ref=danaepp.com)
-- 
+- [The confused deputy problem](https://securitylabs.datadoghq.com/articles/appsync-vulnerability-disclosure/)
 ## CRLF Injection
 
 [Session Fixation](https://hackerone.com/reports/15492) via [nginx misconfiguration](http://blog.volema.com/nginx-insecurities.html)

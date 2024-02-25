@@ -1,3 +1,5 @@
+## Detection
+
 From [Manual SQLi discovery tips](https://web.archive.org/web/20221128070017/https://gerbenjavado.com/manual-sql-injection-discovery-tips/):
 
 You have to confirm it is the SQL command that is causing the error and not something like a date parser. To do this you can use a range of tricks:

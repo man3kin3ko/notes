@@ -35,6 +35,7 @@ You can also try [static-get](https://github.com/minos-org/minos-static).
 
 >Notice that Alpine uses musl libc instead of glibc.
 
+[Mitigations](https://www.cisa.gov/sites/default/files/2024-02/Joint-Guidance-Identifying-and-Mitigating-LOTL_V3508c.pdf?utm_source=convertkit&utm_medium=email&utm_campaign=%F0%9F%A4%94+Do+you+even+know+the+difference%3F%20-%2013071642)
 ## Obfuscation
 
 ### NetAssembly

