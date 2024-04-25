@@ -10,3 +10,16 @@ If the 13th character (the first one after the second hyphen) is equal to one, t
 If application uses newer versions of GUIDs, also check the backward compatibility. 
 ### See also
 - https://danaepp.com/attacking-predictable-guids-when-hacking-apis
+
+## Developer codes
+
+### OTP
+
+```
+1111
+1234
+0000
+123456
+000000
+111111
+```

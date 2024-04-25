@@ -14,8 +14,10 @@
 - https://bugbounty.mts-link.ru/
 ## Worldwide
 
-- Immunefi
+- https://immunefi.com/
 - https://bughunters.google.com/about/rules/5604090422493184/google-play-security-reward-program-rules
+- https://www.intigriti.com/programs
+- https://code4rena.com/
 
 # by Schemes
 
