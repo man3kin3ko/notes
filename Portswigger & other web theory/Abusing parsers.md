@@ -7,6 +7,12 @@ For example, suppose a web application that takes user input and register the sp
 
 ## URLs
 
+```
+http://http://http://@http://http://?http://#http://
+http://1://http://@2://http://?3#http://4
+http://http://1@http://2?http://#3
+```
+
 ![](../pics/surprisingly-valid-url.png)
 
 ## Email
@@ -54,6 +60,8 @@ Besides the global `+7` and local `(880)5553535` phone numbers can actually have
 While the first one allows you to try different reflection methods, the last ones can be used to bypass rate limiting on forgot password functionality.
 
 ## Unicode
+
+http://cweb.github.io/unicode-security-guide/
 
 ![](../pics/nodejs-unicode.png)
 ### IDNA standard
