@@ -1,4 +1,6 @@
 
+Burp Extensions: GraphQL Raider
+
 GraphQL query should optionally includes the `query` operation type for reading operations or `mutation` for modifying operations and arbitrary query name. Mutations are always require input as an argument, meanwhile in queries it can be used to catch up a specific object instead of a group. 
 
 Fingerprint:
@@ -48,6 +50,19 @@ mutation BatchChangeObj($input1: InputObj!, $input2: InputObj!) {
     }
 ```
 Pay attention to how input is provided. Such notation allows you to bruteforce object variables.
+
+#### Language specials
+
+`human(id: "1000")` <- this is called inline object literal. Passing object literals inline is not directly allowed for custom input types (i.e. InputObj above).
+
+Passing variables to fragments:
+
+```
+query HeroComparison($first: Int = 3) { <— notice "="
+  leftComparison: hero(episode: EMPIRE) {
+    ...comparisonFields
+  }
+```
 #### Other ways to obtain valid queries
 
 Inspect JavaScript files (even the minified ones!) to find any valid GraphQL queries
