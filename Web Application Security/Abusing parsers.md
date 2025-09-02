@@ -65,6 +65,10 @@ http://cweb.github.io/unicode-security-guide/
 
 ![](../pics/nodejs-unicode.png)
 ### IDNA standard
+...
 
 ## JSON
 [[JSON abuse]]
+
+## XML
+[[XXE]]

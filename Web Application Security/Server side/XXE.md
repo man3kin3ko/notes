@@ -60,6 +60,20 @@ While a parametrized entity is defined and used only within DTD:
 <root></root>
 ```
 Notice that metacharacters like `&gt;` also represent a general entity.
+
+## CData
+
+CDATA stands for Character Data and it means that the data in between these strings includes data that _could_ be interpreted as XML markup, but should not be.
+
+This section is often used to include code blocks which contain special symbols. However, the same can be achived with escaping characters.
+
+The key differences between CDATA and comments are:
+
+- CDATA is still part of the document, while a comment is not.
+- In CDATA you cannot include the string `]]>` ([`CDEnd`](http://www.w3.org/TR/REC-xml/#NT-CDEnd)), while in a comment [`--` is invalid](http://www.w3.org/TR/REC-xml/#sec-comments).
+- [Parameter Entity](http://www.w3.org/TR/REC-xml/#dt-PERef) references are not recognized inside of comments.
+
+https://stackoverflow.com/questions/2784183/what-does-cdata-in-xml-mean
 ## XInclude
 
 XInclude is a generic mechanism for merging XML files.

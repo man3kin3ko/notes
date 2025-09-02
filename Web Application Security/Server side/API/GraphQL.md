@@ -1,7 +1,7 @@
 
 Burp Extensions: GraphQL Raider
 
-GraphQL query should optionally includes the `query` operation type for reading operations or `mutation` for modifying operations and arbitrary query name. Mutations are always require input as an argument, meanwhile in queries it can be used to catch up a specific object instead of a group. 
+GraphQL query should optionally include the `query` operation type for reading operations or `mutation` for modifying operations and arbitrary query name. Mutations are always require input as an argument, meanwhile in queries it can be used to catch up a specific object instead of a group. 
 
 Fingerprint:
 - Send `query{__typename}`  to receive `{"data": {"__typename": "query"}}`. `__typename` is a reserved query field which is used to get object type as a string.
@@ -71,3 +71,4 @@ Inspect JavaScript files (even the minified ones!) to find any valid GraphQL que
 - https://0xn3va.gitbook.io/cheat-sheets/web-application/graphql-vulnerabilities
 - https://lab.wallarm.com/graphql-batching-attack/
 - https://cheatsheetseries.owasp.org/cheatsheets/GraphQL_Cheat_Sheet.html
+- https://www.vaadata.com/blog/graphql-api-vulnerabilities-common-attacks-and-security-tips/
