@@ -1,0 +1,58 @@
+**Протокол** представляет собой **распределенный алгоритм**, определяющий последовательность действий каждой из сторон.
+
+Основные области применения:
+- идентификация и аутентификация; различают протоколы односторонней и взаимной идентификации (напр. протоколы LM и NTLM)
+- распределение ключей
+- неотслеживаемость
+- выработки общего ключа (Диффи-Хеллман)
+- разделения секрета
+
+Свойства, которыми может обладать протокол:
+- secrecy
+- authentication[[[Crytpographic Protocols#^e7542f]]]:
+	- agreement - two parties involved in a protocol are guaranteed to agree upon the values of variables after successful completion of the protocol
+	- injectivity - each run of an agent executing the initiator role corresponds to a unique run of its communication partner running the responder role
+
+Протоколы, обладающие свойством agreement, но не выполняющие требования injectivity, уязвимы к replay attacks.
+
+1. https://people.cispa.io/cas.cremers/downloads/papers/CrMaVi2006-syntactic_injectivity.pdf ^e7542f
+## Формальные доказательства
+
+Безопасность протокола можно доказать формально, просчитывая возможные состояния системы и правила переходов (transition) между ними.  При этом доказательство строится в *symbolic model of cryptography*, где битовые строки обобщены до понятия *term*. 
+
+Состояние системы описывается мультимножеством (множеством, допускающим дублирование) *facts*. Фактом называется предикат, влияющий на состояние системы, например, "сообщение h(x) отправлено через незащищенный канал". 
+
+Такие модели не учитывают side channel attacks на основе времени, потребления энергии, нагрузки CPU, шума и других физических атак.
+### Tamarin
+
+Помимо facts, выделяет action facts, которые не влияют на состояние системы, но учитываются при вычислении *trace* со стороны злоумышленника, или последовательности переходов до заданного состояния. По сути trace это symbolic proof верности или ложности определенного свойства протокола, который в Tamarin формулируется в леммах. Action facts нужны для формулирования лемм.
+```
+rule State2State_Transition:
+	[Premise] // state, предпосылка
+	-- [ActionFact] -> //transition
+	[Conclusion] // state
+```
+Разделяют linear и persistent facts, persistent fact остаются даже если они не были сохранены в conclusion. Persistent facts обозначаются `!Fact`. У фактов есть арность, что означает, что если он впервые был упомянут с двумя аргументами, Tamarin будет далее ожидать также два аргумента. Чтобы составить переменную из нескольких, например, для того, чтобы презентовать сообщение, состоящее сразу из нескольких параметров, можно использовать оператор `<a, b, msg>`.
+
+Переменные могут быть публичными значениями, такими, как IP адреса - `$IP` или константы в протоколах типа DH - `'g'`. Если это некое случайное значение, такое, как пароль, оно должно появиться в предпосылке через факт `Fr(~pass)`, где символ `~` обозначает переменную типа fresh. Также Tamarin предлагает переменные с типом единица времени `#i`, что позволяет моделировать параллельное выполнение протоколов и используется в формулировании лемм.
+
+Лемма может быть сформулирована через операторы `exists-trace` и `all-traces` (используется по умолчанию), чтобы определить, должна оны быть доказана для всех случаев запуска протокола или только одного.
+
+```
+lemma MITM
+	"
+	All client server sessionKey givenSessionKey #i #j . // . == such as
+	(
+		ClientCreateSession(client, server, sessionkey) @ #i & // at momemnt i
+		ServCreateSession(server, client, givenSessionKey) @ #j & // at moment j
+		#j < #i 
+	)
+	==> not(
+		Ex #k1 #k2 . K(sessionKey) @ #k1 & K(givenSessionKey) @ #k2 // not exists such time k at which an adversary learns the sessionkey
+		)
+	"
+```
+
+Доказательство может быть прервано, если Tamarin не прошел этап "deconstruction complete", в этом случае необходимо сформулировать вспомогательные леммы. 
+
+[![Разбор синтаксиса](https://img.youtube.com/vi/XptJG19hDcQ/maxresdefault.jpg)](https://youtu.be/XptJG19hDcQ)

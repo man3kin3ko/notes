@@ -15,6 +15,8 @@ Typical vulnerabilities are:
 - CSRF if data is passed via GET request and the server supports `application/x-www-form-urlencoded`
 - Any authorization problems, such as IDOR
 
+
+
 #### Suggestions bruteforce
 
 See https://github.com/Escape-Technologies/graphql-wordlist
