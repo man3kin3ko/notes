@@ -1,19 +1,28 @@
 **Протокол** представляет собой **распределенный алгоритм**, определяющий последовательность действий каждой из сторон.
 
+Если при разработке криптосистем предполагается внешний противник, то в криптографических протоколах противником может быть внутренний - один или несколько - участников протокола.
+
 Основные области применения:
-- идентификация и аутентификация; различают протоколы односторонней и взаимной идентификации (напр. протоколы LM и NTLM)
-- распределение ключей
-- неотслеживаемость
-- выработки общего ключа (Диффи-Хеллман)
-- разделения секрета
+- идентификация и аутентификация; различают протоколы односторонней и взаимной идентификации - unilateral vs mutual authentication (напр. протоколы LM и NTLM)
+- неотслеживаемость – это гарантирование невозможности получения сведений о действиях пользователя в системах с *большим* количеством участников (в системах электронных платежей, системах доступа к электронным фондам)
+- управление ключами:
+	- выработка общего ключа (Диффи-Хеллман)
+	- PKI - генерация, распределение, передача и проверка открытых ключей
+	- KMS - генерация, хранение, резервное копирование, изъятие и ротация
+	- KPS (key pre-distribution scheme)
+	- Secret sharing (splitting) 
 
 Свойства, которыми может обладать протокол:
 - secrecy
 - authentication[[[Crytpographic Protocols#^e7542f]]]:
 	- agreement - two parties involved in a protocol are guaranteed to agree upon the values of variables after successful completion of the protocol
-	- injectivity - each run of an agent executing the initiator role corresponds to a unique run of its communication partner running the responder role
+	- injectivity (функция является односторонней) - each run of an agent executing the initiator role corresponds to a unique run of its communication partner running the responder role
 
 Протоколы, обладающие свойством agreement, но не выполняющие требования injectivity, уязвимы к replay attacks.
+
+Аутентификация может касаться как участников протокола, передаваемой ими информации, так и самого канала связи или их ключа.
+
+---
 
 1. https://people.cispa.io/cas.cremers/downloads/papers/CrMaVi2006-syntactic_injectivity.pdf ^e7542f
 ## Формальные доказательства
