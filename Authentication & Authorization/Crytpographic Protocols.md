@@ -14,7 +14,7 @@
 
 Свойства, которыми может обладать протокол:
 - secrecy
-- authentication[[[Crytpographic Protocols#^e7542f]]]:
+- authentication:
 	- agreement - two parties involved in a protocol are guaranteed to agree upon the values of variables after successful completion of the protocol
 	- injectivity (функция является односторонней) - each run of an agent executing the initiator role corresponds to a unique run of its communication partner running the responder role
 
