@@ -1,0 +1,10 @@
+https://palant.info/about/
+https://tib3rius.com/
+https://www.arneswinnen.net/
+https://ngailong.wordpress.com/
+https://0xpatrik.com/
+https://www.geekboy.ninja/blog/
+https://s0cket7.com/
+https://jonbottarini.com/category/security/
+https://liveoverflow.com/
+https://gynvael.coldwind.pl/

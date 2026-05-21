@@ -313,6 +313,7 @@ https://github.com/JakeWharton/pidcat
 
 # Ресурсы и практика
 
+https://androidreverse.org/
 https://forum.bugcrowd.com/t/researcher-resources-mobile-focused/1376
 
 BugBounty отчеты могут быть найдены, например, следующим образом: `"deep link*"|"deeplink*" site:https://hackerone.com/reports/` или `"intent" site:https://hackerone.com/reports/`

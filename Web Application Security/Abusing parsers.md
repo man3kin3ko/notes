@@ -62,6 +62,8 @@ While the first one allows you to try different reflection methods, the last one
 ## Unicode
 
 http://cweb.github.io/unicode-security-guide/
+https://seriot.ch/resources/talks_papers/i_love_unicode_softshake.pdf
+https://seriot.ch/resources/talks_papers/20141106_asfws_unicode_hacks.pdf
 
 ![](../pics/nodejs-unicode.png)
 ### IDNA standard
