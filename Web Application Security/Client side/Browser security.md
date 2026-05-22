@@ -16,7 +16,9 @@ SOP prohibits JS access from different web-pages, based upon its origin.
 
 Origin is defined as ....
 
-Preflight request
+### CORS
+
+Preflight request is always sent with custom headers, HTTP methods other than GET and POST with standard content types
 ## Browsing context
 
 ^de86ca
@@ -28,9 +30,10 @@ A browsing context may be part of a **browsing context group**, which is a set 
 Contexts with the same origin can communicate via Brodcast Channel API's postMessage.
 
 ## Content Security Policy
-
+## Mixed Content blocking
 
 ### Links
 - https://aszx87410.github.io/beyond-xss/en/ch1/browser-security-model/
 - https://web.archive.org/web/20250701172012/https://medium.com/@JIT_Shellcode/intro-to-sandbox-escapes-47720604a8ec
 - https://developer.mozilla.org/en-US/docs/Glossary/Browsing_context
+- https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Mixed_content

