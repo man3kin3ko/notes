@@ -60,8 +60,116 @@ Node Role ResourceQuota
 ## Hardening
 ## etcd
 
-Инстансов etcd может быть несколько, поэтому лучшей практикой является создание отдельного CA для общения инстансов etcd друг с другом и для общения с ворклоад нодами через API.
+Для авторизации компонентов кластера для доступа к etcd лучшей практикой является использование mutual TLS. Инстансов etcd может быть несколько, поэтому лучшей практикой является создание двух отдельных CA: для общения инстансов etcd друг с другом и API-сервером; для общения остальных компонентов control plane друг с другом и ворклоад нодами.
 
 По умолчанию секреты в etcd хранятся (at rest) в открытом виде.
 
 > 💡При включении шифрования etcd секреты шифруются только при записи, поэтому после включения необходимо вручную зашифровать все имеющиеся секреты с помощью kubectl
+
+Для шифрования секретов может использоваться Key Management Service (KMS) provider или встроенный `secretbox` provider. KMS необходимо развернуть на выделенной ноде. Для ограничения деплоя других подов может использоваться механизм taints, который запрещает планировщику размещать определенные группы подов на заданных нодах, и affinity rules, для привязки подов к конкретным нодам. Доступ к секретам, хранимым через внешний провайдер, возможно осуществить посредством Container Storage Interface (CSI), который позволяет реализовать ephemeral secrets.
+
+## metadata API
+
+Ограничить сетевой доступ до объекта metadata в рамках неймспейса, чтобы скомпрометированный под не мог получить доступ до облачных учетных данных, перечислять доступы и другую информацию. Включить логирование попыток доступа:
+```yaml
+apiVersion: audit.k8s.io/v1 # версия API
+kind: Policy # тип объекта
+omitStages:
+	- "RequestReceived"
+rules:
+	- level: RequestResponse # записывать полный запрос и ответ
+	  resources:
+		  - group: "" # core группа
+		    resources: ["pods"]
+	- level: Metadata # записывать только факт обращения
+	  resources:
+		  - group: ""
+		    resources: ["secrets", "configmaps"]
+```
+
+## Beta-функциональность
+
+Бета и альфа функциональность включена по умолчанию, и может содержать уязвимости и привести к непредсказуемому поведению. Для отключения `kube-apiserver` должен быть запущен с флагом `--runtime-config=group/version=false
+`
+## Сетевая политика
+
+Ingress/Egress контроллеры могут использоваться для контроля внешнего и исходящего трафика, security groups для контроля доступа к control plane. Доступ к control plane должен быть ограничен с привелигированных нод, изолированных при помощи taints и affinity rules.
+
+Поды используют SNAT, поэтому трафик от контейнера будет иметь IP ноды, на котором он исполняется. Некоторые плагины позволяют подам использовать non-overlay network, что позволяет применять традиционные подходы к контролю трафика.
+
+Пример сетевой политики для приложения
+
+```yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+spec:
+  podSelector:
+	matchLabels:
+	  app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {} # Разрешает трафик от всех подов в этом же неймспейсе
+    - from:
+        - ipBlock:
+            cidr: 10.10.1.0/24 # Разрешает трафик из внешней подсети 10.10.1.0/24
+      ports:
+        - port: 443
+        - port: 80
+  egress:
+    - to:
+      - namespaceSelector: {}
+        podSelector:
+	      matchLabels:
+	        k8s-app: kube-dns # Разрешает обращение к CoreDNS
+	  ports:
+	    - port: 53
+	      protocol: UDP
+	- to:
+	    - ipBlock:
+	        cidr: 10.10.2.0/24 # Разрешает обращение к БД
+	  ports:
+        - port: 6432
+```
+
+## Рабочие нагрузки
+
+Образ контейнера должен быть получен из доверенного источника и иметь хэш или конкретный тэг, отличный от `latest` и `master`. Для исключения уязвимостей на уровне ОС может использоваться minimal image, такой как distroless от Google, и multistage build для избежания наличия в конечном образе артефактов сборки. 
+
+Образ должен сжиматься при помощи Docker опции `--squash`, во избежание утечки секретов в слоях. Проинспектировать содержание слоев можно в `/var/lib/docker/overlay2/l`. В папке слоя содержится файл `link` с сокращенным идентификатором слоя и директорией diff, включающей все содержимое слоя. Верхние слои содержат файл `lower` со ссылкой на родительский слой.
+
+При деплое контейнер можно ограничивать политикой `securityContext` для [пода](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#podsecuritycontext-v1-core) и [контейнера](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#securitycontext-v1-core):
+```yml
+apiVersion: apps/v1
+kind: Deployment
+spec:
+	template:
+		spec:
+			securityContext:
+				runAsNonRoot: true
+				runAsUser: 65534
+				runAsGroup: 65534
+				seccomProfile:
+					type: runtimeDefault
+			containers:
+				- securityContext: # 
+						allowPriveledgeEscalation: false
+						readOnlyRootFilesystem: true
+						capabilities:
+							drop: {ALL}
+```
+
+Или использовать для этого pod security standards
+```yml
+apiVersion: v1
+kind: Namespaces
+metadata:
+	name: restricted-namespace
+labels:
+	pod-security.kubernetes.io/enforce: restricted
+	pod-security.kubernetes.io/enforce-version: latest
+```
+
+Сканирование образа в пайплайне может производится при загрузке в реджистри, после сборки образа и инлайн при помощи Admission controller непосредственно перед деплоем. CI/CD система также может создавать поверхность атаки для злоумышленника и требует харденинга.
