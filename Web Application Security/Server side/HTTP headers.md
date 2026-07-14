@@ -1,3 +1,8 @@
+## Header-based authorization
+
+Check if an application restricts an access based on the `Referer` header.
+
+Sometimes changing the `Host` or `X-Forwarded-For` headers makes an application believe that request was made from the trusted environment, thus resulting in an exploitable behavior.
 ## Custom headers reconnaissance
 
 You can find any custom HTTP-headers that is used by the server using a preflight request. Then, the server must include all expected headers in `Access-Control-Request-Headers`.
