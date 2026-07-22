@@ -21,4 +21,4 @@ When an attacker tricks cache into serving a dangerous payload for many clients 
 
 ## Web cache deception
 
-Sometimes confidential information can be obtained via a *web cache deception*. If an attacker sends victim a link, for example, `/account.php/nonexistent.png`, he would obtain personal data that is located at `/account.php` by tricking the caching system to belive that the page is a static content. To do so, an attacker needs first to find a discrepancy in how the cache and origin server parse the URL path.
+Sometimes confidential information can be obtained via a *web cache deception*. If an attacker sends victim a link, for example, `/account.php/nonexistent.png`, he would obtain personal data that is located at `/account.php` by tricking the caching system to belive that the page is a static content. To do so, an attacker needs first to find a discrepancy [[Abusing parsers#^199b77]] in how the cache and origin server parse the URL path.
