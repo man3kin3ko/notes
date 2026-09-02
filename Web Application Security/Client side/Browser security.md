@@ -12,7 +12,7 @@ To protect sites content from hardware attacks like Meltdown and Spectre, Chromi
 
 ## Single Origin Policy
 
-The SOP is designed to restrict scripts running on one origin from _reading_ data from another origin. 
+The SOP is designed to restrict documents on one origin from acessing data from another origin. 
 
 >Origin is defined as scheme, hostname and port combination in [RFC6454](https://datatracker.ietf.org/doc/html/rfc6454)
 
@@ -22,20 +22,32 @@ Scripts executed from pages with an `about:blank` or `javascript:` URI inher
 
 #### Cross-origin
 
-When origin differs, a request is treated as *cross-origin*. While reading a cross-origin response is prohibited, embedding a cross-origin resource is permitted. These embeddings are `<img>`, `<form>`'s `action` attribute, `<frame>`, `<iframe>`, `<video>`,`<audio>`, `<link>` or `@import` in CSS context, which are an exact reason why CSRF attacks even exist.
+When origin differs, a request is treated as *cross-origin*. These requests fall into categories:
+- DOM access
+- Fetch
+- Embeddings
+- Storage
 
 Originally SOP was created by Netscape Navigator in 1995 to restrict cross-origin access to the DOM. If we open a website with different origin via `window.open` or an iframe, we can't change its `document.body.innerHTML` to insert our payload and therefore broke a security context. But a few exceptions exist:
 - `location` object is writable, but not readable
 - `window.length` is readable, but not writable
 - `window.name` is readable and writable and sometimes is used as a workaroud for cross-origin communication
 - we can execute `close`, `blur`, and `focus` (useful for triggering XSS in these attributes)
+
+JavaScript Fetch API is blocked from *reading* a cross-origin response.
+
+While reading a cross-origin response is prohibited, embedding a cross-origin resource is permitted. These embeddings are `<img>`, `<form>`'s `action` attribute, `<frame>`, `<iframe>`, `<video>`,`<audio>`, `<link rel="stylesheet">` or `@import` in CSS context, which are an exact reason why CSRF attacks even exist. 
+
+Access to data stored in the browser such as `Web Storage` and `IndexedDB` are separated by origin.
+
+For more info and limitations, see https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy.
 #### Same-origin
 
 If we do share the same origin, for example, with a frame and its parent, we can access global variables: `window.parent.globalVar`.
 
 While `LocalStorage` is shared between multiple windows of the same origin, `SessionStorage` is limited to the current window regardless of the origin.
 
-#### Policy relaxation
+#### Policy relaxation / workarounds
 
 - CORS protocol
 - [JSONP](https://aszx87410.github.io/beyond-xss/en/ch2/csp-bypass/#bypassing-via-jsonp)
@@ -44,7 +56,16 @@ While `LocalStorage` is shared between multiple windows of the same origin, `Ses
 
 ### CORS
 
-Preflight request is always sent with custom headers, HTTP methods other than GET and POST (CORS-safelisted method) with standard content types.
+Browsers compatable with CORS protocol always send `Origin` header with cross-origin requests. 
+
+In a preflight request, a client send an `OPTIONS` request, to which server respond with `204` code and a list of CORS headers with permitted and forbidden, methods, custom headers, credentials, and other preferences for cross-origin communication. 
+
+Simple requests aren't a subject for a preflight request. They:
+- only include forbidden request headers ([[Browser security#^b2303b]]) and [CORS-safelisted request-headers](https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_request_header)
+- only use `application/x-www-form-urlencoded`, `multipart/form-data`, `text/plain` for `Content-Type`
+- only use GET, OPTIONS and POST methods (CORS-safelisted method)
+
+Response to a simple request can only be *read* after a server send an appropriate CORS headers.   
 
 `CONNECT`, `TRACE`, or `TRACK` are forbidden.
 ## Cookie security
@@ -53,9 +74,13 @@ Preflight request is always sent with custom headers, HTTP methods other than GE
 
 When site is different, a requst from a browser is called *cross-site*.
 
+A page can set a cookie for its own domain or any parent domain, as long as the parent domain is not a [public suffix](https://publicsuffix.org/list/public_suffix_list.dat).
+
 ## Forbidden headers
 
-Forbidden headers are those that can't be either read (`Set-Cookie`) or set programmatically. Some of the headers, which cannot be set programmaticaly, are `Cookie`, `Origin`, `Sec-*`, `TE` and some others. While `Referer` is considered forbidden by the spec, it's still can be set with `fetch`:
+^b2303b
+
+Forbidden headers are those that can't be either read (`Set-Cookie`) or set programmatically - `Cookie`, `Origin`, `Sec-*`, `TE` and some others. While `Referer` is considered forbidden by the spec, it's still can be set with `fetch`:
 
 ```js
 const response = await fetch(request, { body: JSON.stringify({ username: "example" }), referrer: "", })
