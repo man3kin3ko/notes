@@ -3,7 +3,7 @@ Deeplink это
 Вызов deeplink через adb:
 
 ```
-adb shell am start -W -a android.intent.action.VIEW -d "myapp://open?param="
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://open?param=" 
 ```
 
 До версии 18 в WebView Android и до версии 25 в Chrome посредством диплинкинга можно вызывать приложение в фрейме:
